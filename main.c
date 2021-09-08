@@ -70,30 +70,26 @@ static  uint8_t m_length = sizeof(m_tx_buf);        /**< Transfer length. */
  * @brief SPI user event handler.
  * @param event
  */
-void spi_event_handler(nrf_drv_spi_evt_t const * p_event,
-                       void *                    p_context)
+void spi_event_handler(nrf_drv_spi_evt_t const * p_event, void * p_context)
 {
     spi_xfer_done = true;
     NRF_LOG_INFO("Transfer completed.");
-        NRF_LOG_INFO(" Received:");
-        NRF_LOG_HEXDUMP_INFO(m_rx_buf, 16);
-    }
+    NRF_LOG_INFO(" Received:");
+    NRF_LOG_HEXDUMP_INFO(m_rx_buf, 16);    
 }
 
-void  wizchip_select(void)
+void wizchip_select(void)
 {
     nrf_gpio_pin_clear(SPI_SS_PIN);
 }
 
-void  wizchip_deselect(void)
+void wizchip_deselect(void)
 {
     nrf_gpio_pin_set(SPI_SS_PIN);
 }
 
 uint8_t spi_read_byte(void)
 {
-//    memset(m_rx_buf, 0, m_length);
-//    memset(m_tx_buf, 0, m_length);
     spi_xfer_done = false;
 
     APP_ERROR_CHECK(nrf_drv_spi_transfer(&spi, m_tx_buf, 1, m_rx_buf, 1));
@@ -107,8 +103,6 @@ uint8_t spi_read_byte(void)
 
 void spi_write_byte(uint8_t wb)
 {
-//    memset(m_rx_buf, 0, m_length);
-//    memset(m_tx_buf, 0, m_length);
     spi_xfer_done = false;
     m_tx_buf[0] = wb;
 
@@ -121,8 +115,6 @@ void spi_write_byte(uint8_t wb)
 
 void spi_read_burst(uint8_t* pBuf, uint16_t len)
 {
-//    memset(m_rx_buf, 0, m_length);
-//    memset(m_tx_buf, 0, m_length);
     spi_xfer_done = false;
 
     APP_ERROR_CHECK(nrf_drv_spi_transfer(&spi, m_tx_buf, len, m_rx_buf, len));
@@ -136,8 +128,6 @@ void spi_read_burst(uint8_t* pBuf, uint16_t len)
 
 void spi_write_burst(uint8_t* pBuf, uint16_t len)
 {
-//    memset(m_rx_buf, 0, m_length);
-//    memset(m_tx_buf, 0, m_length);
     spi_xfer_done = false;
 
     memcpy(m_tx_buf, pBuf, len);
@@ -147,7 +137,8 @@ void spi_write_burst(uint8_t* pBuf, uint16_t len)
     while (!spi_xfer_done) {
             __WFE();
     }
-    //NRF_LOG_INFO("spi_write_burst %02X:%02X:%02X:%02X len=%d", *(pBuf), *(pBuf+1), *(pBuf+2), *(pBuf+3), len);
+    memcpy(pBuf, m_rx_buf, len);
+    NRF_LOG_INFO("spi_write_burst %02X:%02X:%02X:%02X len=%d", *(pBuf), *(pBuf+1), *(pBuf+2), *(pBuf+3), len);
 }
 
 int main(void)
@@ -177,7 +168,7 @@ int main(void)
     spi_config.miso_pin = SPI_MISO_PIN;
     spi_config.mosi_pin = SPI_MOSI_PIN;
     spi_config.sck_pin  = SPI_SCK_PIN;
-//    spi_config.frequency = NRF_DRV_SPI_FREQ_125K;
+    spi_config.frequency = NRF_DRV_SPI_FREQ_250K;
     spi_config.mode      = NRF_DRV_SPI_MODE_0;
     spi_config.bit_order = NRF_DRV_SPI_BIT_ORDER_MSB_FIRST;
     APP_ERROR_CHECK(nrf_drv_spi_init(&spi, &spi_config, spi_event_handler, NULL));
