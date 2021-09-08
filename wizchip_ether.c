@@ -73,15 +73,6 @@ bool wizchip_is_connected_now(void)
 
 int wizchip_connect(void)
 {
-    nrf_gpio_cfg_output(W5500_RESET);
-    nrf_gpio_pin_set(W5500_RESET);
-    nrf_delay_ms(100);
-
-    nrf_gpio_pin_clear(W5500_RESET);
-    nrf_delay_ms(100);
-    nrf_gpio_pin_set(W5500_RESET);
-    nrf_delay_ms(10);
-
     reg_wizchip_cris_cbfunc(NULL, NULL);
     reg_wizchip_cs_cbfunc(wizchip_select, wizchip_deselect);
     reg_wizchip_spi_cbfunc(spi_read_byte, spi_write_byte);
@@ -91,11 +82,12 @@ int wizchip_connect(void)
     nrf_delay_ms(100);
 
     uint8_t status;
-  #ifndef _WIZCHIP_DEBUG_
+  #ifdef _WIZCHIP_DEBUG_
     while(true) {
         status = getVERSIONR();
         if (status == VERSIONR_W5500) break;
-        nrf_delay_ms(1);
+        NRF_LOG_FLUSH();
+        nrf_delay_ms(100);
     }
   #else
     status = getVERSIONR();
